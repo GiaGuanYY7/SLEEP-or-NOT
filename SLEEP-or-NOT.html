@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>睡了么 · 早睡打卡 Demo</title>
+<style>
+  :root {
+    --primary: #5B6CFF;
+    --primary-2: #7B68EE;
+    --bg: #F5F6FA;
+    --card: #FFFFFF;
+    --text: #2B2F36;
+    --sub: #8A8F99;
+    --green: #3FBF6F;
+    --green-bg: #E8F8EE;
+    --red: #FF4D4F;
+    --red-bg: #FFECEC;
+    --gray: #E3E5EC;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #E9EBF2;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .phone {
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--bg);
+    min-height: 100vh;
+    box-shadow: 0 0 40px rgba(0,0,0,0.08);
+    padding-bottom: 72px;
+  }
+  /* Hero */
+  .hero {
+    background: linear-gradient(160deg, #4A5BD5 0%, #6A5BE8 55%, #8F6BE0 100%);
+    color: #fff;
+    padding: 32px 24px 40px;
+    border-radius: 0 0 28px 28px;
+  }
+  .hero-date { font-size: 14px; opacity: .85; }
+  .hero-title { font-size: 28px; font-weight: 700; margin: 8px 0 28px; }
+  .hero-stats { display: flex; justify-content: space-around; }
+  .hstat { text-align: center; }
+  .hstat .num { font-size: 30px; font-weight: 700; line-height: 1.15; }
+  .hstat .label { font-size: 12px; opacity: .85; margin-top: 4px; }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 20px;
+    margin: 0 16px 16px;
+    box-shadow: 0 2px 10px rgba(43,47,54,0.05);
+  }
+  .card-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+  .card-title { font-size: 16px; font-weight: 600; }
+  .card-sub { font-size: 13px; color: var(--sub); }
+
+  .btn {
+    display: block; width: 100%;
+    border: none; border-radius: 999px;
+    font-size: 16px; font-weight: 600;
+    padding: 13px; cursor: pointer;
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; }
+  .btn-primary:disabled { background: #C8CDDB; cursor: not-allowed; }
+  .btn-ghost { background: transparent; border: 1.5px solid #D5D9E6; color: var(--primary); font-size: 13px; padding: 7px 16px; width: auto; }
+  .btn-ghost.cancel { color: var(--red); border-color: #FFD9D9; }
+  .btn-danger { background: #fff; color: var(--red); border: 1.5px solid #FFD9D9; }
+
+  .done-row { display: flex; align-items: center; }
+  .done-time { font-size: 34px; font-weight: 700; margin-right: 12px; }
+  .tag { padding: 3px 12px; border-radius: 999px; font-size: 12px; }
+  .tag-green { background: var(--green-bg); color: var(--green); }
+  .tag-red { background: var(--red-bg); color: var(--red); }
+  .tag-gray { background: var(--gray); color: var(--sub); }
+  .done-row .btn-ghost { margin-left: auto; }
+  .note { margin-top: 12px; font-size: 13px; color: #5A6172; background: var(--bg); border-radius: 10px; padding: 10px 14px; }
+  .hint { font-size: 12px; color: var(--sub); margin-top: 10px; line-height: 1.6; }
+  .tip { font-size: 14px; }
+
+  /* Challenge banner on home */
+  .challenge-banner {
+    display: flex; align-items: center;
+    margin: 16px 16px 0; padding: 14px 16px;
+    background: linear-gradient(135deg, #FFB75E, #FF9A3C);
+    color: #fff; border-radius: 16px; cursor: pointer;
+  }
+  .challenge-banner .cb-emoji { font-size: 26px; margin-right: 12px; }
+  .challenge-banner .cb-body { flex: 1; }
+  .challenge-banner .cb-title { font-size: 14px; font-weight: 600; }
+  .challenge-banner .cb-sub { font-size: 12px; opacity: .9; margin-top: 2px; }
+  .challenge-banner .cb-progress { background: rgba(255,255,255,0.3); border-radius: 999px; height: 4px; margin-top: 8px; overflow: hidden; }
+  .challenge-banner .cb-fill { background: #fff; height: 100%; border-radius: 999px; }
+  .challenge-banner .cb-arrow { font-size: 20px; margin-left: 8px; }
+
+  /* Tip card */
+  .tip-card { display: flex; align-items: center; gap: 12px; }
+  .tip-card .tip-emoji { font-size: 22px; }
+  .tip-card .tip-text { font-size: 14px; color: #5A6172; line-height: 1.6; }
+
+  /* Calendar */
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .cal-nav { font-size: 20px; padding: 0 10px; cursor: pointer; color: var(--primary); }
+  .cal-title { font-size: 16px; font-weight: 600; }
+  .cal-week { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 12px; color: var(--sub); margin-bottom: 6px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cell { aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; position: relative; }
+  .cell.empty { cursor: default; }
+  .cell .day { font-weight: 600; }
+  .cell .tm { font-size: 10px; color: #fff; }
+  .cell-green { background: #A3C0A1; color: #2B2F36; }
+  .cell-red { background: #D38882; color: #2B2F36; }
+  .cell-gray { background: var(--gray); color: var(--sub); }
+  .cell.today { outline: 2px solid var(--primary); }
+
+  /* Settings */
+  .set-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F0F1F5; cursor: pointer; }
+  .set-row:last-child { border-bottom: none; }
+  .set-row.danger .set-label { color: var(--red); }
+  .set-label { font-size: 14px; }
+  .text-primary { color: var(--primary); font-size: 13px; }
+  .text-danger { color: var(--red); font-size: 13px; }
+  input[type=time], input[type=text], input[type=number], input[type=date] {
+    border: 1px solid #E3E5EC; border-radius: 8px; padding: 6px 8px;
+    font-size: 14px; color: var(--primary); font-weight: 600; background: #fff;
+  }
+  input:disabled, textarea:disabled { background: #F0F1F5; color: #8A8F99; cursor: not-allowed; }
+  .time-input {
+    border: 1px solid #E3E5EC; border-radius: 8px; padding: 6px 14px;
+    font-size: 15px; color: var(--primary); font-weight: 600; background: #fff;
+    cursor: pointer; min-width: 68px; text-align: center; font-family: inherit;
+  }
+  .time-input:disabled { background: #F0F1F5; color: #8A8F99; cursor: not-allowed; }
+  .range { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--sub); }
+
+  /* Bottom tab bar */
+  .tabbar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: #fff; display: flex;
+    border-top: 1px solid #E3E5EC;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.05);
+    z-index: 20;
+  }
+  .tab-item { flex: 1; text-align: center; padding: 8px 0 10px; cursor: pointer; color: var(--sub); font-size: 11px; }
+  .tab-item .ico { font-size: 20px; display: block; margin-bottom: 2px; }
+  .tab-item.active { color: var(--primary); font-weight: 600; }
+
+  /* Panels */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Stats sub-tabs */
+  .subtabs { display: flex; background: #fff; border-bottom: 1px solid #E3E5EC; margin-bottom: 12px; }
+  .subtab { flex: 1; text-align: center; padding: 12px 0; font-size: 14px; color: var(--sub); cursor: pointer; }
+  .subtab.active { color: var(--primary); font-weight: 600; border-bottom: 2px solid var(--primary); }
+  .stats-sub { display: none; }
+  .stats-sub.active { display: block; }
+
+  /* Stats nav + summary + chips + chart + detail */
+  .nav-row { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; margin-bottom: 12px; }
+  .nav-btn { font-size: 22px; padding: 0 14px; cursor: pointer; color: var(--primary); }
+  .nav-title { font-size: 15px; font-weight: 600; }
+  .stat-chips { display: flex; gap: 8px; margin-bottom: 12px; }
+  .stat-chip { flex: 1; text-align: center; padding: 10px; background: var(--bg); border-radius: 10px; }
+  .stat-chip-label { font-size: 11px; color: var(--sub); }
+  .stat-chip-val { font-size: 15px; font-weight: 700; margin-top: 2px; }
+  canvas.chart { width: 100%; display: block; }
+  .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .sum { text-align: center; padding: 14px; background: var(--bg); border-radius: 12px; }
+  .sum-val { font-size: 22px; font-weight: 700; color: var(--primary); }
+  .sum-label { font-size: 12px; color: var(--sub); margin-top: 2px; }
+  .detail-row { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #F0F1F5; }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-label { font-size: 14px; width: 90px; }
+  .detail-time { font-size: 20px; font-weight: 700; flex: 1; }
+  .detail-note { font-size: 13px; color: #5A6172; background: var(--bg); border-radius: 8px; padding: 8px 12px; margin-top: 6px; }
+  .edit-btn { margin-top: 16px; }
+
+  /* Challenge */
+  .intro-emoji, .result-emoji { font-size: 44px; text-align: center; margin: 8px 0; }
+  .intro-title, .result-title { font-size: 20px; font-weight: 700; text-align: center; }
+  .intro-text { font-size: 14px; color: #5A6172; text-align: center; margin: 10px 0 16px; line-height: 1.6; }
+  .intro-rules { background: var(--bg); border-radius: 12px; padding: 14px; margin-bottom: 16px; }
+  .rule { font-size: 13px; color: #5A6172; line-height: 1.9; }
+  .rules-link { text-align: center; font-size: 13px; color: var(--primary); margin-top: 14px; cursor: pointer; }
+  .ch-head { display: flex; align-items: center; }
+  .ch-emoji { font-size: 32px; margin-right: 12px; }
+  .ch-title-wrap { flex: 1; }
+  .ch-title { font-size: 17px; font-weight: 700; }
+  .ch-sub { font-size: 12px; color: var(--sub); margin-top: 2px; }
+  .ch-streak { text-align: center; margin: 16px 0; }
+  .ch-streak-num { font-size: 44px; font-weight: 700; color: var(--primary); }
+  .ch-streak-label { font-size: 12px; color: var(--sub); margin-left: 6px; }
+  .progress { background: #EDEFF5; border-radius: 999px; height: 6px; overflow: hidden; }
+  .progress-fill { background: var(--primary); height: 100%; border-radius: 999px; transition: width .3s; }
+  .ch-progress-text { font-size: 12px; color: var(--sub); text-align: center; margin-top: 6px; }
+  .ch-info { display: flex; margin: 16px 0; }
+  .ch-info-item { flex: 1; text-align: center; }
+  .ch-info-item .lbl { font-size: 12px; color: var(--sub); display: block; }
+  .ch-info-item .val { font-size: 18px; font-weight: 700; display: block; margin-top: 4px; }
+  .ch-determination { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; text-align: center; border-radius: 12px; padding: 10px; font-size: 13px; margin: 14px 0; }
+  .ch-actions { display: flex; gap: 12px; }
+  .ch-actions .btn { flex: 1; }
+  .result-text { font-size: 14px; color: #5A6172; text-align: center; margin: 10px 0; line-height: 1.6; }
+  .result-meta { display: flex; justify-content: center; gap: 8px; font-size: 12px; color: var(--sub); margin: 10px 0 16px; }
+  .h-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #F0F1F5; }
+  .h-item:last-child { border-bottom: none; }
+  .h-left { flex: 1; }
+  .h-title { font-size: 14px; font-weight: 600; }
+  .h-sub { font-size: 12px; color: var(--sub); margin-top: 2px; }
+  .h-status { font-size: 13px; }
+  .h-status.success { color: var(--green); }
+  .h-status.failed { color: var(--red); }
+  .h-status.cancelled { color: var(--sub); }
+
+  /* Challenge create form */
+  .ch-form-section { margin-bottom: 20px; }
+  .ch-form-label { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+  .pick-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pick-chip { padding: 8px 16px; border-radius: 999px; background: #F0F1F5; font-size: 13px; color: #5A6172; cursor: pointer; }
+  .pick-chip.active { background: var(--primary); color: #fff; font-weight: 600; }
+  .custom-row { display: flex; align-items: center; margin-top: 10px; font-size: 13px; color: var(--sub); }
+  .custom-row input { flex: 1; margin-left: 8px; }
+  .determination { font-size: 13px; color: var(--primary); margin-top: 10px; font-weight: 600; }
+
+  /* Rules modal */
+  .sec { font-size: 14px; font-weight: 700; margin: 14px 0 6px; color: #2B2F36; }
+  .li { font-size: 13px; color: #5A6172; line-height: 1.8; }
+
+  /* Modal */
+  .mask { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: flex-end; justify-content: center; z-index: 40; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .28s ease, visibility 0s linear .28s; }
+  .mask.show { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .28s ease, visibility 0s; }
+  .sheet { width: 100%; max-width: 480px; background: #fff; border-radius: 20px 20px 0 0; padding: 24px 20px 30px; max-height: 88vh; overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; transform: translateY(100%); transition: transform .28s cubic-bezier(0.32, 0.72, 0, 1); }
+  .mask.show .sheet { transform: translateY(0); }
+  .sheet h3 { font-size: 18px; margin-bottom: 16px; }
+  .field { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; }
+  .field label { font-size: 14px; }
+  .field textarea { width: 100%; border: 1px solid #E3E5EC; border-radius: 8px; padding: 8px; font-size: 13px; margin-top: 4px; resize: none; }
+  .sheet .btns { display: flex; gap: 12px; margin-top: 20px; }
+  .sheet .btns .btn { flex: 1; }
+  .sheet::-webkit-scrollbar { width: 6px; }
+  .sheet::-webkit-scrollbar-thumb { background: #D5D9E6; border-radius: 3px; }
+
+  /* 时间滚筒选择器（iOS 风格） */
+  .wheel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .wheel-title { font-size: 16px; font-weight: 600; }
+  .wheel-head .btn { width: auto; flex: none; padding: 7px 18px; }
+  .wheel-head .btn.confirm { color: var(--primary); border-color: transparent; background: transparent; font-weight: 600; }
+  .wheel { position: relative; display: flex; align-items: center; justify-content: center; height: 200px; }
+  .wheel-col { width: 84px; height: 200px; overflow-y: auto; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; text-align: center; scrollbar-width: none; }
+  .wheel-col::-webkit-scrollbar { display: none; }
+  .wheel-item { height: 40px; line-height: 40px; font-size: 18px; color: #B4B9C6; scroll-snap-align: center; user-select: none; transition: color .12s; }
+  .wheel-item.active { color: var(--text); font-weight: 700; }
+  .wheel-sep { font-size: 26px; font-weight: 700; color: var(--text); padding: 0 10px; }
+  .wheel-highlight { position: absolute; left: 12px; right: 12px; top: 50%; transform: translateY(-50%); height: 40px; border-top: 1px solid #E8EAF1; border-bottom: 1px solid #E8EAF1; background: rgba(91,108,255,0.05); pointer-events: none; z-index: 1; }
+  .wheel::before, .wheel::after { content: ''; position: absolute; left: 0; right: 0; height: 78px; pointer-events: none; z-index: 2; }
+  .wheel::before { top: 0; background: linear-gradient(to bottom, #fff, rgba(255,255,255,0)); }
+  .wheel::after { bottom: 0; background: linear-gradient(to top, #fff, rgba(255,255,255,0)); }
+</style>
+</head>
+<body>
+<div class="phone">
+  <!-- 打卡 -->
+  <div class="tab-panel active" id="panel-home">
+    <div class="hero">
+      <div class="hero-date" id="dateText">-</div>
+      <div class="hero-title">🌙 睡了么</div>
+      <div class="hero-stats">
+        <div class="hstat"><div class="num" id="stStreak">0</div><div class="label">连续打卡(天)</div></div>
+        <div class="hstat"><div class="num" id="stEarlySleep">0</div><div class="label">累计早睡(天)</div></div>
+        <div class="hstat"><div class="num" id="stEarlyWake">0</div><div class="label">累计早起(天)</div></div>
+        <div class="hstat"><div class="num" id="stLate">0</div><div class="label">累计熬夜(天)</div></div>
+      </div>
+    </div>
+
+    <div class="challenge-banner" id="challengeBanner" style="display:none" onclick="switchTab('challenge')">
+      <span class="cb-emoji">🏆</span>
+      <div class="cb-body">
+        <div class="cb-title" id="bannerTitle"></div>
+        <div class="cb-sub" id="bannerSub"></div>
+        <div class="cb-progress"><div class="cb-fill" id="bannerFill"></div></div>
+      </div>
+      <span class="cb-arrow">›</span>
+    </div>
+
+    <!-- 入睡打卡 -->
+    <div class="card" style="margin-top:16px">
+      <div class="card-head">
+        <span class="card-title">😴 入睡打卡</span>
+        <span class="card-sub">目标 <span id="sleepGoalText">23:30</span> 前</span>
+      </div>
+      <div id="sleepNotDone">
+        <button class="btn btn-primary" id="sleepBtn">入睡打卡</button>
+        <div class="hint" id="sleepHint" style="display:none"></div>
+      </div>
+      <div id="sleepDone" style="display:none">
+        <div class="done-row">
+          <span class="done-time" id="sleepTimeText"></span>
+          <span class="tag" id="sleepTag"></span>
+          <button class="btn btn-ghost" onclick="openEdit(todaySleepDate())">修改</button>
+        </div>
+        <div class="note" id="sleepNote" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- 起床打卡 -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">☀️ 起床打卡</span>
+        <span class="card-sub">目标 <span id="wakeGoalText">07:30</span> 前</span>
+      </div>
+      <div id="wakeNotDone">
+        <button class="btn btn-primary" id="wakeBtn">起床打卡</button>
+        <div class="hint" id="wakeHint" style="display:none"></div>
+      </div>
+      <div id="wakeDone" style="display:none">
+        <div class="done-row">
+          <span class="done-time" id="wakeTimeText"></span>
+          <span class="tag" id="wakeTag"></span>
+          <button class="btn btn-ghost" onclick="openEdit(wakeDate())">修改</button>
+        </div>
+        <div class="note" id="wakeNote" style="display:none"></div>
+      </div>
+    </div>
+
+    <div class="card tip-card">
+      <span class="tip-emoji">💡</span>
+      <span class="tip-text" id="tipText"></span>
+    </div>
+  </div>
+
+  <!-- 挑战 -->
+  <div class="tab-panel" id="panel-challenge">
+    <div id="chContent"></div>
+  </div>
+
+  <!-- 统计 -->
+  <div class="tab-panel" id="panel-stats">
+    <div class="subtabs">
+      <div class="subtab active" data-sub="cal" onclick="switchStatsSub('cal')">日历</div>
+      <div class="subtab" data-sub="day" onclick="switchStatsSub('day')">日</div>
+      <div class="subtab" data-sub="week" onclick="switchStatsSub('week')">周</div>
+      <div class="subtab" data-sub="month" onclick="switchStatsSub('month')">月</div>
+    </div>
+
+    <!-- 日历子视图 -->
+    <div class="stats-sub active" id="statsCal">
+      <div class="card">
+        <div class="cal-head">
+          <span class="cal-nav" onclick="calShift(-1)">‹</span>
+          <span class="cal-title" id="calTitle"></span>
+          <span class="cal-nav" onclick="calShift(1)">›</span>
+        </div>
+        <div class="cal-week">
+          <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="hint">🟢 早睡 · 🔴 熬夜 · ⚪ 未打卡。点击日期查看/补卡/修改。</div>
+      </div>
+    </div>
+
+    <!-- 日子视图 -->
+    <div class="stats-sub" id="statsDay">
+      <div class="nav-row">
+        <span class="nav-btn" onclick="statsDayShift(-1)">‹</span>
+        <span class="nav-title" id="statsDayLabel"></span>
+        <span class="nav-btn" onclick="statsDayShift(1)">›</span>
+      </div>
+      <div class="card">
+        <div class="detail-row"><span class="detail-label">😴 入睡时间</span><span class="detail-time" id="statsDaySleep">--</span><span class="tag" id="statsDaySleepTag"></span></div>
+        <div class="detail-note" id="statsDaySleepNote" style="display:none"></div>
+        <div class="detail-row"><span class="detail-label">☀️ 起床时间</span><span class="detail-time" id="statsDayWake">--</span><span class="tag" id="statsDayWakeTag"></span></div>
+        <div class="detail-note" id="statsDayWakeNote" style="display:none"></div>
+        <div class="detail-row"><span class="detail-label">⏱️ 睡眠时长</span><span class="detail-time" id="statsDayDuration">--</span></div>
+        <button class="btn btn-primary edit-btn" onclick="openEdit(statsDayKey)">编辑当日记录</button>
+      </div>
+    </div>
+
+    <!-- 周子视图 -->
+    <div class="stats-sub" id="statsWeek">
+      <div class="nav-row">
+        <span class="nav-btn" onclick="statsWeekShift(-1)">‹</span>
+        <span class="nav-title" id="statsWeekTitle"></span>
+        <span class="nav-btn" onclick="statsWeekShift(1)">›</span>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-title">😴 入睡时间</span></div>
+        <div class="stat-chips">
+          <div class="stat-chip"><div class="stat-chip-label">平均</div><div class="stat-chip-val" id="weekSleepAvg">--</div></div>
+          <div class="stat-chip"><div class="stat-chip-label">最早</div><div class="stat-chip-val" id="weekSleepMin">--</div></div>
+          <div class="stat-chip"><div class="stat-chip-label">最晚</div><div class="stat-chip-val" id="weekSleepMax">--</div></div>
+        </div>
+        <canvas class="chart" id="chartSleep"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-title">☀️ 起床时间</span></div>
+        <div class="stat-chips">
+          <div class="stat-chip"><div class="stat-chip-label">平均</div><div class="stat-chip-val" id="weekWakeAvg">--</div></div>
+          <div class="stat-chip"><div class="stat-chip-label">最早</div><div class="stat-chip-val" id="weekWakeMin">--</div></div>
+          <div class="stat-chip"><div class="stat-chip-label">最晚</div><div class="stat-chip-val" id="weekWakeMax">--</div></div>
+        </div>
+        <canvas class="chart" id="chartWake"></canvas>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-title">⏱️ 睡眠时长</span></div>
+        <div class="stat-chips">
+          <div class="stat-chip"><div class="stat-chip-label">平均</div><div class="stat-chip-val" id="weekDurAvg">--</div></div>
+          <div class="stat-chip"><div class="stat-chip-label">最长</div><div class="stat-chip-val" id="weekDurMax">--</div></div>
+          <div class="stat-chip"><div class="stat-chip-label">最短</div><div class="stat-chip-val" id="weekDurMin">--</div></div>
+        </div>
+        <canvas class="chart" id="chartDuration"></canvas>
+      </div>
+
+      <div class="hint" style="padding:0 16px">睡眠时长仅统计「入睡 + 起床」都记录的日子。</div>
+    </div>
+
+    <!-- 月子视图 -->
+    <div class="stats-sub" id="statsMonth">
+      <div class="nav-row">
+        <span class="nav-btn" onclick="statsMonthShift(-1)">‹</span>
+        <span class="nav-title" id="statsMonthTitle"></span>
+        <span class="nav-btn" onclick="statsMonthShift(1)">›</span>
+      </div>
+      <div class="card">
+        <div class="summary-grid">
+          <div class="sum"><div class="sum-val" id="statsMonthEarly">0</div><div class="sum-label">早睡(天)</div></div>
+          <div class="sum"><div class="sum-val" id="statsMonthLate">0</div><div class="sum-label">熬夜(天)</div></div>
+          <div class="sum"><div class="sum-val" id="statsMonthAvgSleep">--</div><div class="sum-label">平均入睡</div></div>
+          <div class="sum"><div class="sum-val" id="statsMonthAvgDur">--</div><div class="sum-label">平均时长</div></div>
+        </div>
+        <div class="hint" id="statsMonthCheckin"></div>
+      </div>
+      <div class="card">
+        <div class="cal-week">
+          <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+        </div>
+        <div class="cal-grid" id="statsMonthGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 我的 -->
+  <div class="tab-panel" id="panel-mine">
+    <div class="card">
+      <div class="card-head"><span class="card-title">⚙️ 睡眠目标 & 打卡时段</span></div>
+      <div class="set-row"><span class="set-label">早睡目标</span><button type="button" class="time-input" id="setSleepGoal" data-label="早睡目标" onclick="openWheel('setSleepGoal')">--:--</button></div>
+      <div class="set-row"><span class="set-label">早起目标</span><button type="button" class="time-input" id="setWakeGoal" data-label="早起目标" onclick="openWheel('setWakeGoal')">--:--</button></div>
+      <div class="set-row"><span class="set-label">晚安打卡时段</span>
+        <span class="range"><button type="button" class="time-input" id="setSleepStart" data-label="晚安开始" onclick="openWheel('setSleepStart')">--:--</button> ~ 次日 <button type="button" class="time-input" id="setSleepEnd" data-label="晚安结束" onclick="openWheel('setSleepEnd')">--:--</button></span>
+      </div>
+      <div class="set-row"><span class="set-label">早起打卡时段</span>
+        <span class="range"><button type="button" class="time-input" id="setWakeStart" data-label="早起开始" onclick="openWheel('setWakeStart')">--:--</button> ~ <button type="button" class="time-input" id="setWakeEnd" data-label="早起结束" onclick="openWheel('setWakeEnd')">--:--</button></span>
+      </div>
+      <button class="btn btn-primary" style="margin-top:16px" onclick="saveSettings()">保存设置</button>
+      <div class="hint">提示：修改目标不影响已生成的历史记录判定（每条记录保存时已快照当时目标）。</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">📦 数据</span></div>
+      <div class="set-row" onclick="exportData()"><span class="set-label">导出全部数据(JSON)</span><span class="text-primary">复制 ›</span></div>
+      <div class="set-row danger" onclick="clearAllData()"><span class="set-label">清空全部数据</span><span class="text-danger">›</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">ℹ️ 关于</span></div>
+      <div class="hint">「睡了么」v0.1 · 早睡打卡工具 · 数据保存在本机浏览器 localStorage，清理浏览器数据前请先导出备份。</div>
+    </div>
+  </div>
+</div>
+
+<!-- 底部 tab 栏 -->
+<div class="tabbar">
+  <div class="tab-item active" data-tab="home" onclick="switchTab('home')"><span class="ico">🌙</span>打卡</div>
+  <div class="tab-item" data-tab="challenge" onclick="switchTab('challenge')"><span class="ico">🏆</span>挑战</div>
+  <div class="tab-item" data-tab="stats" onclick="switchTab('stats')"><span class="ico">📊</span>统计</div>
+  <div class="tab-item" data-tab="mine" onclick="switchTab('mine')"><span class="ico">⚙️</span>我的</div>
+</div>
+
+<!-- 编辑弹层 -->
+<div class="mask" id="mask" onclick="if(event.target===this)closeEdit()">
+  <div class="sheet">
+    <h3 id="editTitle">编辑记录</h3>
+    <div class="hint" id="editLockHint" style="display:none"></div>
+    <div class="field"><label>😴 入睡时间</label><button type="button" class="time-input" id="eSleep" data-label="入睡时间" onclick="openWheel('eSleep')">--:--</button></div>
+    <div class="field" style="display:block"><label>入睡备注</label><textarea id="eSleepNote" rows="2" placeholder="熬夜原因、睡眠感受…"></textarea></div>
+    <div class="field"><label>☀️ 起床时间</label><button type="button" class="time-input" id="eWake" data-label="起床时间" onclick="openWheel('eWake')">--:--</button></div>
+    <div class="field" style="display:block"><label>起床备注</label><textarea id="eWakeNote" rows="2" placeholder="晚起原因、睡眠感受…"></textarea></div>
+    <div class="btns">
+      <button class="btn btn-ghost" onclick="closeEdit()">取消</button>
+      <button class="btn btn-danger" id="delBtn" onclick="delRecord()">删除</button>
+      <button class="btn btn-primary" onclick="saveEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 创建挑战弹层 -->
+<div class="mask" id="chMask" onclick="if(event.target===this)closeChallengeCreate()">
+  <div class="sheet">
+    <h3>发起早睡挑战</h3>
+
+    <div class="ch-form-section">
+      <div class="ch-form-label">🎯 连续早睡天数目标</div>
+      <div class="pick-row" id="chDaysChips">
+        <div class="pick-chip" data-v="7" onclick="selectDays(7)">7天</div>
+        <div class="pick-chip" data-v="14" onclick="selectDays(14)">14天</div>
+        <div class="pick-chip" data-v="21" onclick="selectDays(21)">21天</div>
+        <div class="pick-chip" data-v="30" onclick="selectDays(30)">30天</div>
+      </div>
+      <div class="custom-row">
+        <span>自定义天数（≥7）</span>
+        <input type="number" id="chDaysInput" min="7" placeholder="如 45" oninput="inputDays(this.value)">
+      </div>
+    </div>
+
+    <div class="ch-form-section">
+      <div class="ch-form-label">💰 挑战金</div>
+      <div class="pick-row" id="chAmountChips">
+        <div class="pick-chip" data-v="2" onclick="selectAmount(2)">¥2</div>
+        <div class="pick-chip" data-v="10" onclick="selectAmount(10)">¥10</div>
+        <div class="pick-chip" data-v="50" onclick="selectAmount(50)">¥50</div>
+        <div class="pick-chip" data-v="100" onclick="selectAmount(100)">¥100</div>
+        <div class="pick-chip" data-v="500" onclick="selectAmount(500)">¥500</div>
+      </div>
+      <div class="custom-row">
+        <span>自定义金额（≥2 元）</span>
+        <input type="number" id="chAmountInput" min="2" placeholder="如 200" oninput="inputAmount(this.value)">
+      </div>
+      <div class="determination" id="chDetermination"></div>
+    </div>
+
+    <div class="ch-form-section">
+      <div class="ch-form-label">📅 开始日期</div>
+      <input type="date" id="chStartDate">
+      <div class="hint">创建并支付成功后，从所选日期当晚的入睡打卡开始计算连续天数。</div>
+    </div>
+
+    <div class="btns">
+      <button class="btn btn-ghost" onclick="closeChallengeCreate()">取消</button>
+      <button class="btn btn-primary" onclick="payChallenge()">支付挑战金并开启</button>
+    </div>
+    <div class="rules-link" onclick="openRules()">查看挑战规则 ›</div>
+  </div>
+</div>
+
+<!-- 挑战规则弹层 -->
+<div class="mask" id="rulesMask" onclick="if(event.target===this)closeRules()">
+  <div class="sheet">
+    <h3>📋 挑战规则</h3>
+    <div class="sec">一、如何创建挑战</div>
+    <div class="li">在「挑战」页点击「发起挑战」，设置连续早睡天数目标（最低 7 天），选择挑战金金额，确认支付后从次日（或指定日期）正式开始。</div>
+    <div class="sec">二、金额设置规则</div>
+    <div class="li">挑战金最低 2 元、上不封顶，提供快捷档 2 / 10 / 50 / 100 / 500 元，支持自定义输入。</div>
+    <div class="sec">三、打卡判定标准</div>
+    <div class="li">达标：当日入睡打卡时间 ≤ 早睡目标时间（以创建挑战时设定的目标为准）。</div>
+    <div class="li">断签：当日未在打卡时段内完成入睡打卡，或入睡时间晚于早睡目标。</div>
+    <div class="li">历史补卡不计入挑战连续天数。</div>
+    <div class="sec">四、如何取消挑战</div>
+    <div class="li">第一次打卡前可免费取消，挑战金全额退回。</div>
+    <div class="sec">五、成功与失败结算</div>
+    <div class="li">成功：连续达标达到目标天数，挑战金全额退回。</div>
+    <div class="li">失败：任意一天断签，挑战立即终止，挑战金不予退还。</div>
+    <div class="sec">六、其他注意事项</div>
+    <div class="li">天数目标一经确认不可修改；挑战期间修改早睡目标不影响本挑战判定。</div>
+    <div class="li">本演示环境挑战金为模拟支付，不产生真实资金变动。</div>
+    <div class="btns"><button class="btn btn-primary" onclick="closeRules()">我知道了</button></div>
+  </div>
+</div>
+
+<!-- 时间滚筒选择器 -->
+<div class="mask" id="wheelMask" onclick="if(event.target===this)closeWheel()">
+  <div class="sheet wheel-sheet">
+    <div class="wheel-head">
+      <button class="btn btn-ghost" onclick="closeWheel()">取消</button>
+      <span class="wheel-title" id="wheelTitle">选择时间</span>
+      <button class="btn btn-ghost confirm" onclick="confirmWheel()">确定</button>
+    </div>
+    <div class="wheel">
+      <div class="wheel-col" id="wheelHour"></div>
+      <span class="wheel-sep">:</span>
+      <div class="wheel-col" id="wheelMin"></div>
+      <div class="wheel-highlight"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 工具函数 =====
+const pad2 = n => (n < 10 ? '0' + n : '' + n);
+const dayKey = d => { d = d || new Date(); return d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate()); };
+function addDays(key, delta) {
+  const p = key.split('-').map(Number);
+  return dayKey(new Date(p[0], p[1]-1, p[2]+delta));
+}
+const nowHM = () => pad2(new Date().getHours()) + ':' + pad2(new Date().getMinutes());
+const hmToMin = hm => { const p = hm.split(':').map(Number); return p[0]*60 + p[1]; };
+function minToHM(min) { min = ((min % 1440) + 1440) % 1440; return pad2(Math.floor(min/60)) + ':' + pad2(min%60); }
+function sleepCheckinDate(hm) { return hm < '12:00' ? addDays(dayKey(), -1) : dayKey(); }
+function wakeDate() { return addDays(dayKey(), -1); }
+function todaySleepDate() { return sleepCheckinDate(nowHM()); }
+function inWindow(hm, start, end) { return end <= start ? (hm >= start || hm < end) : (hm >= start && hm < end); }
+function sleepDuration(s, w) { if (!s || !w) return null; const a = hmToMin(s), b = hmToMin(w); return b > a ? b - a : b + 1440 - a; }
+function mondayOf(key) {
+  const p = key.split('-').map(Number);
+  const dt = new Date(p[0], p[1]-1, p[2]);
+  return addDays(key, -((dt.getDay() + 6) % 7));
+}
+function fmtMinutes(min) { const h = Math.floor(min/60), m = min%60; if (h <= 0) return m + '分钟'; return m > 0 ? h + '小时' + m + '分' : h + '小时'; }
+function fmtDuration(min) { return min == null ? '--' : (min/60).toFixed(1) + '小时'; }
+function fmtDateShort(key) { const p = key.split('-').map(Number); return p[1] + '月' + p[2] + '日'; }
+
+const WEEK_NAMES = ['周日','周一','周二','周三','周四','周五','周六'];
+const WEEK_LABELS = ['一','二','三','四','五','六','日'];
+
+// ===== 数据层 =====
+const K = { RECORDS: 'slm:records', SETTINGS: 'slm:settings', CHALLENGE: 'slm:challenge', CHALLENGE_HISTORY: 'slm:challengeHistory' };
+const DEFAULT_SETTINGS = { sleepGoal:'23:30', wakeGoal:'07:30', sleepWinStart:'19:00', sleepWinEnd:'04:00', wakeWinStart:'04:00', wakeWinEnd:'13:00', backfillLimit:30 };
+function getSettings() { try { return Object.assign({}, DEFAULT_SETTINGS, JSON.parse(localStorage.getItem(K.SETTINGS)) || {}); } catch(e) { return Object.assign({}, DEFAULT_SETTINGS); } }
+function getRecords() { try { return JSON.parse(localStorage.getItem(K.RECORDS)) || {}; } catch(e) { return {}; } }
+function saveRecords(r) { localStorage.setItem(K.RECORDS, JSON.stringify(r)); }
+function saveSettingsToStore(s) { localStorage.setItem(K.SETTINGS, JSON.stringify(s)); }
+
+function saveRecord(key, patch) {
+  const s = getSettings();
+  const records = getRecords();
+  const next = Object.assign({}, records[key] || {});
+  const hadSleep = !!next.sleepTime, hadWake = !!next.wakeTime;
+  Object.keys(patch).forEach(k => { const v = patch[k]; if (v === null || v === undefined || v === '') delete next[k]; else next[k] = v; });
+  if (!next.sleepTime) { delete next.sleepTime; delete next.sleepSrc; delete next.sleepGoalAt; }
+  if (!next.wakeTime) { delete next.wakeTime; delete next.wakeSrc; delete next.wakeGoalAt; }
+  if (next.sleepTime && !hadSleep) next.sleepGoalAt = s.sleepGoal;
+  if (next.wakeTime && !hadWake) next.wakeGoalAt = s.wakeGoal;
+  if (next.sleepTime || next.wakeTime || next.sleepNote || next.wakeNote) { next.updatedAt = Date.now(); records[key] = next; }
+  else delete records[key];
+  saveRecords(records);
+}
+
+function getChallenge() { try { return JSON.parse(localStorage.getItem(K.CHALLENGE)) || null; } catch(e) { return null; } }
+function saveChallenge(c) { if (c) localStorage.setItem(K.CHALLENGE, JSON.stringify(c)); else localStorage.removeItem(K.CHALLENGE); }
+function getChallengeHistory() { try { return JSON.parse(localStorage.getItem(K.CHALLENGE_HISTORY)) || []; } catch(e) { return []; } }
+function addChallengeHistory(c) { const h = getChallengeHistory(); h.unshift(c); localStorage.setItem(K.CHALLENGE_HISTORY, JSON.stringify(h)); }
+function clearAll() { Object.keys(K).forEach(k => localStorage.removeItem(K[k])); }
+
+// ===== 统计 =====
+const hasSleep = r => !!(r && r.sleepTime);
+const hasWake = r => !!(r && r.wakeTime);
+const goalOf = (r, f, def) => (r && r[f]) || def;
+// 早睡判定：凌晨(<12:00)的入睡时间按"次日 24:xx"计算，避免 00:30 被字符串误判为早于 23:30
+function isEarlySleepTime(sleepTime, goal) {
+  const sm = hmToMin(sleepTime), gm = hmToMin(goal);
+  return (sm < 720 ? sm + 1440 : sm) <= gm;
+}
+function totals() {
+  const records = getRecords(), s = getSettings();
+  let early = 0, late = 0, earlyWake = 0, checkin = 0;
+  Object.keys(records).forEach(k => {
+    const r = records[k];
+    if (hasSleep(r)) { checkin++; (isEarlySleepTime(r.sleepTime, goalOf(r,'sleepGoalAt',s.sleepGoal)) ? early++ : late++); }
+    if (r.wakeTime && r.wakeTime <= goalOf(r,'wakeGoalAt',s.wakeGoal)) earlyWake++;
+  });
+  return { early, late, earlyWake, checkin };
+}
+function streak() {
+  const records = getRecords();
+  let d = dayKey(), n = 0;
+  if (!hasSleep(records[d])) d = addDays(d, -1);
+  while (hasSleep(records[d])) { n++; d = addDays(d, -1); }
+  return n;
+}
+function minMaxAvg(hmList, crossMidnight) {
+  const vals = hmList.filter(v => v);
+  if (!vals.length) return { avg: null, min: null, max: null };
+  let mins = vals.map(hmToMin);
+  if (crossMidnight && mins.some(m => m >= 720) && mins.some(m => m < 720)) mins = mins.map(m => m < 720 ? m + 1440 : m);
+  const sum = mins.reduce((a,b)=>a+b,0);
+  return { avg: minToHM(Math.round(sum/mins.length)), min: minToHM(Math.min.apply(null,mins)), max: minToHM(Math.max.apply(null,mins)) };
+}
+function minMaxDuration(minList) {
+  const vals = minList.filter(v => v != null);
+  if (!vals.length) return { avg: null, min: null, max: null };
+  const sum = vals.reduce((a,b)=>a+b,0);
+  return { avg: Math.round(sum/vals.length), min: Math.min.apply(null,vals), max: Math.max.apply(null,vals) };
+}
+function weekSeries(records, mondayKey, sleepGoal, wakeGoal) {
+  const sleep = [], wake = [], duration = [];
+  for (let i = 0; i < 7; i++) {
+    const k = addDays(mondayKey, i), r = records[k];
+    sleep.push(hasSleep(r) ? r.sleepTime : null);
+    wake.push(hasWake(r) ? r.wakeTime : null);
+    duration.push(sleepDuration(r && r.sleepTime, r && r.wakeTime));
+  }
+  return { sleep, wake, duration, sleepStat: minMaxAvg(sleep, true), wakeStat: minMaxAvg(wake, false), durationStat: minMaxDuration(duration) };
+}
+function monthStats(records, year, month, sleepGoal) {
+  const days = new Date(year, month, 0).getDate();
+  let earlySleep = 0, lateNight = 0; const sleepMins = [], durMins = [];
+  for (let d = 1; d <= days; d++) {
+    const k = year + '-' + pad2(month) + '-' + pad2(d), r = records[k];
+    if (hasSleep(r)) { const m = hmToMin(r.sleepTime); sleepMins.push(m < 720 ? m + 1440 : m); (isEarlySleepTime(r.sleepTime, goalOf(r,'sleepGoalAt',sleepGoal)) ? earlySleep++ : lateNight++); }
+    const dur = sleepDuration(r && r.sleepTime, r && r.wakeTime);
+    if (dur != null) durMins.push(dur);
+  }
+  const avg = arr => arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : null;
+  const avgSleepMin = avg(sleepMins);
+  return { days, checkinDays: sleepMins.length, earlySleep, lateNight, avgSleep: avgSleepMin == null ? null : minToHM(avgSleepMin), avgDuration: avg(durMins) };
+}
+
+// ===== 挑战逻辑 =====
+const STATUS_LABEL = { success: '成功', failed: '失败', cancelled: '已取消' };
+function determinationPercent(amount) {
+  if (amount <= 2) return 10;
+  if (amount >= 888) return 99;
+  return Math.round(10 + (amount - 2) / (888 - 2) * (99 - 10));
+}
+function isSleepLocked(D, nowKey, nowHMv, winStart, winEnd) {
+  const lock = winEnd > winStart ? { date: D, hm: winEnd } : { date: addDays(D, 1), hm: winEnd };
+  return lock.date < nowKey || (lock.date === nowKey && nowHMv >= lock.hm);
+}
+function pct(streak, goalDays) { return Math.min(100, Math.round(streak / goalDays * 100)); }
+function challengeProgress(challenge, records, settings, nowKey, nowHMv) {
+  const start = settings.sleepWinStart, end = settings.sleepWinEnd;
+  let streak = 0, d = challenge.startDate;
+  while (d <= nowKey) {
+    const r = records[d];
+    const ok = !!(r && r.sleepTime && r.sleepSrc === 'realtime' && isEarlySleepTime(r.sleepTime, challenge.goalSleep));
+    if (ok) {
+      streak++;
+      if (streak >= challenge.goalDays) return { streak, status: 'success', failDate: null, percent: 100 };
+      d = addDays(d, 1); continue;
+    }
+    if (isSleepLocked(d, nowKey, nowHMv, start, end)) return { streak, status: 'failed', failDate: d, percent: pct(streak, challenge.goalDays) };
+    return { streak, status: 'active', failDate: null, percent: pct(streak, challenge.goalDays) };
+  }
+  return { streak, status: 'active', failDate: null, percent: pct(streak, challenge.goalDays) };
+}
+
+// ===== 折线图（HTML5 canvas）=====
+function xOf(i, n, padL, plotW) { return n <= 1 ? padL + plotW / 2 : padL + plotW * i / (n - 1); }
+function drawLineHtml(canvas, opts) {
+  const { labels, values, color, format, yMin, yMax } = opts;
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.clientWidth || 320, cssH = 200;
+  canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+  canvas.style.width = cssW + 'px'; canvas.style.height = cssH + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const width = cssW, height = cssH;
+  const padL = 40, padR = 12, padT = 14, padB = 28;
+  const plotW = width - padL - padR, plotH = height - padT - padB;
+  ctx.clearRect(0, 0, width, height);
+
+  // 网格 + y 轴标签
+  ctx.lineWidth = 1; ctx.strokeStyle = '#EDEFF5'; ctx.font = '10px sans-serif'; ctx.fillStyle = '#8A8F99'; ctx.textAlign = 'left';
+  const ticks = 4;
+  for (let i = 0; i <= ticks; i++) {
+    const val = yMax - (yMax - yMin) * i / ticks;
+    const y = padT + plotH * i / ticks;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(width - padR, y); ctx.stroke();
+    ctx.fillText(format(val), 2, y + 3);
+  }
+
+  // x 轴标签
+  ctx.textAlign = 'center';
+  labels.forEach((lb, i) => { ctx.fillText(lb, xOf(i, labels.length, padL, plotW), height - 8); });
+
+  // 折线
+  const pts = values.map((v, i) => v == null ? null : { x: xOf(i, values.length, padL, plotW), y: padT + plotH * (1 - (v - yMin) / (yMax - yMin)) });
+  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+  let started = false;
+  pts.forEach(p => {
+    if (!p) { started = false; return; }
+    if (!started) { ctx.beginPath(); ctx.moveTo(p.x, p.y); started = true; }
+    else ctx.lineTo(p.x, p.y);
+  });
+  ctx.stroke();
+
+  // 数据点
+  ctx.fillStyle = color;
+  pts.forEach(p => { if (!p) return; ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2); ctx.fill(); });
+}
+
+// ===== 导航 =====
+let activeTab = 'home';
+let statsSubTab = 'cal';
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+function switchTab(name) {
+  activeTab = name;
+  document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.querySelectorAll('.tab-item').forEach(el => el.classList.toggle('active', el.dataset.tab === name));
+  render();
+}
+function switchStatsSub(sub) {
+  statsSubTab = sub;
+  document.querySelectorAll('.subtabs .subtab').forEach(el => el.classList.toggle('active', el.dataset.sub === sub));
+  document.querySelectorAll('.stats-sub').forEach(el => el.classList.remove('active'));
+  document.getElementById('stats' + cap(sub)).classList.add('active');
+  renderStats();
+}
+
+// ===== 渲染主调度 =====
+function render() {
+  renderHome();
+  renderChallenge();
+  renderStats();
+  renderMine();
+}
+
+// ===== 首页 =====
+function renderHome() {
+  const now = new Date(), hm = nowHM(), s = getSettings(), records = getRecords();
+  document.getElementById('dateText').textContent = (now.getMonth()+1)+'月'+now.getDate()+'日 '+WEEK_NAMES[now.getDay()];
+
+  const t = totals();
+  document.getElementById('stStreak').textContent = streak();
+  document.getElementById('stEarlySleep').textContent = t.early;
+  document.getElementById('stEarlyWake').textContent = t.earlyWake;
+  document.getElementById('stLate').textContent = t.late;
+
+  // 入睡卡
+  const sd = sleepCheckinDate(hm);
+  const sr = records[sd] || null;
+  document.getElementById('sleepGoalText').textContent = goalOf(sr,'sleepGoalAt',s.sleepGoal);
+  if (sr && sr.sleepTime) {
+    document.getElementById('sleepNotDone').style.display = 'none';
+    document.getElementById('sleepDone').style.display = 'block';
+    document.getElementById('sleepTimeText').textContent = sr.sleepTime;
+    const tag = document.getElementById('sleepTag');
+    const early = isEarlySleepTime(sr.sleepTime, goalOf(sr,'sleepGoalAt',s.sleepGoal));
+    tag.textContent = early ? '早睡 ✓' : '熬夜';
+    tag.className = 'tag ' + (early ? 'tag-green' : 'tag-red');
+    const note = document.getElementById('sleepNote');
+    if (sr.sleepNote) { note.style.display = 'block'; note.textContent = '📝 ' + sr.sleepNote; } else note.style.display = 'none';
+  } else {
+    document.getElementById('sleepDone').style.display = 'none';
+    document.getElementById('sleepNotDone').style.display = 'block';
+    const open = inWindow(hm, s.sleepWinStart, s.sleepWinEnd);
+    const btn = document.getElementById('sleepBtn');
+    btn.disabled = !open;
+    btn.textContent = open ? '入睡打卡' : '现在不在打卡时段';
+    const hint = document.getElementById('sleepHint');
+    hint.style.display = open ? 'none' : 'block';
+    hint.textContent = '晚安打卡时段 ' + s.sleepWinStart + ' ~ 次日' + s.sleepWinEnd + '，可到「统计-日历」页补卡';
+  }
+
+  // 起床卡
+  const wd = wakeDate();
+  const wr = records[wd] || null;
+  document.getElementById('wakeGoalText').textContent = goalOf(wr,'wakeGoalAt',s.wakeGoal);
+  if (wr && wr.wakeTime) {
+    document.getElementById('wakeNotDone').style.display = 'none';
+    document.getElementById('wakeDone').style.display = 'block';
+    document.getElementById('wakeTimeText').textContent = wr.wakeTime;
+    const tag = document.getElementById('wakeTag');
+    const early = wr.wakeTime <= goalOf(wr,'wakeGoalAt',s.wakeGoal);
+    tag.textContent = early ? '早起 ✓' : '晚起';
+    tag.className = 'tag ' + (early ? 'tag-green' : 'tag-red');
+    const note = document.getElementById('wakeNote');
+    if (wr.wakeNote) { note.style.display = 'block'; note.textContent = '📝 ' + wr.wakeNote; } else note.style.display = 'none';
+  } else {
+    document.getElementById('wakeDone').style.display = 'none';
+    document.getElementById('wakeNotDone').style.display = 'block';
+    const open = inWindow(hm, s.wakeWinStart, s.wakeWinEnd);
+    const btn = document.getElementById('wakeBtn');
+    btn.disabled = !open;
+    btn.textContent = open ? '起床打卡' : '现在不在打卡时段';
+    const hint = document.getElementById('wakeHint');
+    hint.style.display = open ? 'none' : 'block';
+    hint.textContent = '早起打卡时段 ' + s.wakeWinStart + ' ~ ' + s.wakeWinEnd + '，可到「统计-日历」页补卡';
+  }
+
+  // 挑战横幅
+  const challenge = getChallenge();
+  const banner = document.getElementById('challengeBanner');
+  if (challenge && challenge.status === 'active') {
+    const p = challengeProgress(challenge, records, s, dayKey(), hm);
+    document.getElementById('bannerTitle').textContent = '早睡挑战进行中：连续 ' + challenge.goalDays + ' 天';
+    document.getElementById('bannerSub').textContent = '已达标 ' + p.streak + ' 天 · 挑战金 ¥' + challenge.amount;
+    document.getElementById('bannerFill').style.width = p.percent + '%';
+    banner.style.display = 'flex';
+  } else {
+    banner.style.display = 'none';
+  }
+
+  // 小提示
+  document.getElementById('tipText').textContent = tipText();
+}
+
+function tipText() {
+  const s = getSettings(), hm = nowHM();
+  const sd = sleepCheckinDate(hm);
+  const record = getRecords()[sd] || null;
+  const goalMin = hmToMin(s.sleepGoal), nowMin = hmToMin(hm);
+  if (record && record.sleepTime) {
+    const g = record.sleepGoalAt || s.sleepGoal;
+    return isEarlySleepTime(record.sleepTime, g) ? '今晚 ' + record.sleepTime + ' 入睡，早睡达成 🎉' : '今晚 ' + record.sleepTime + ' 才睡，熬夜啦，明天加油 🌙';
+  } else if (inWindow(hm, s.sleepWinStart, s.sleepWinEnd)) {
+    const pastGoal = nowMin < 720 || nowMin > goalMin;
+    return pastGoal ? '已经超过早睡目标时间了，现在睡还来得及' : '离早睡目标还有 ' + fmtMinutes(goalMin - nowMin) + '，早点洗漱准备吧';
+  } else {
+    return '打卡时段外，补卡和修改记录请到「统计-日历」页';
+  }
+}
+
+// ===== 日历 =====
+let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
+function buildCalGridHTML(y, month) { // month 为 1-indexed
+  const records = getRecords(), s = getSettings();
+  const today = dayKey();
+  const first = new Date(y, month-1, 1).getDay();
+  const days = new Date(y, month, 0).getDate();
+  let html = '';
+  for (let i = 0; i < first; i++) html += '<div class="cell empty"></div>';
+  for (let d = 1; d <= days; d++) {
+    const key = y + '-' + pad2(month) + '-' + pad2(d);
+    const r = records[key];
+    let cls = 'cell-gray', tm = '';
+    if (r && r.sleepTime) {
+      const early = isEarlySleepTime(r.sleepTime, goalOf(r,'sleepGoalAt',s.sleepGoal));
+      cls = early ? 'cell-green' : 'cell-red';
+      tm = r.sleepTime;
+    }
+    const todayCls = key === today ? ' today' : '';
+    html += '<div class="cell '+cls+''+todayCls+'" onclick="openEdit(\''+key+'\')"><span class="day">'+d+'</span>'+(tm?'<span class="tm">'+tm+'</span>':'')+'</div>';
+  }
+  return html;
+}
+function renderCalendar() {
+  const y = calYear, m = calMonth; // 0-indexed
+  document.getElementById('calTitle').textContent = y + '年' + (m+1) + '月';
+  document.getElementById('calGrid').innerHTML = buildCalGridHTML(y, m+1);
+}
+function calShift(delta) {
+  const d = new Date(calYear, calMonth + delta, 1);
+  calYear = d.getFullYear(); calMonth = d.getMonth();
+  renderCalendar();
+}
+
+// ===== 统计 =====
+let statsDayKey = dayKey();
+let statsWeekKey = mondayOf(dayKey());
+let statsMonthYear = new Date().getFullYear(), statsMonthMonth = new Date().getMonth() + 1;
+let statsCharts = null;
+
+function renderStats() {
+  renderCalendar();
+  renderStatsDay();
+  renderStatsWeek();
+  renderStatsMonth();
+}
+
+function renderStatsDay() {
+  const key = statsDayKey;
+  const r = getRecords()[key] || {};
+  const s = getSettings();
+  const sleepGoal = r.sleepGoalAt || s.sleepGoal;
+  const wakeGoal = r.wakeGoalAt || s.wakeGoal;
+  const dur = sleepDuration(r.sleepTime, r.wakeTime);
+  const p = key.split('-').map(Number);
+  document.getElementById('statsDayLabel').textContent = p[1]+'月'+p[2]+'日 '+WEEK_NAMES[new Date(p[0], p[1]-1, p[2]).getDay()];
+  document.getElementById('statsDaySleep').textContent = r.sleepTime || '--';
+  document.getElementById('statsDayWake').textContent = r.wakeTime || '--';
+  document.getElementById('statsDayDuration').textContent = dur == null ? '--' : (dur/60).toFixed(1) + '小时';
+  const sTag = document.getElementById('statsDaySleepTag');
+  if (r.sleepTime) { const early = isEarlySleepTime(r.sleepTime, sleepGoal); sTag.textContent = early ? '早睡 ✓' : '熬夜'; sTag.className = 'tag ' + (early ? 'tag-green' : 'tag-red'); }
+  else { sTag.textContent = '未记录'; sTag.className = 'tag tag-gray'; }
+  const wTag = document.getElementById('statsDayWakeTag');
+  if (r.wakeTime) { const early = r.wakeTime <= wakeGoal; wTag.textContent = early ? '早起 ✓' : '晚起'; wTag.className = 'tag ' + (early ? 'tag-green' : 'tag-red'); }
+  else { wTag.textContent = '未记录'; wTag.className = 'tag tag-gray'; }
+  const sNote = document.getElementById('statsDaySleepNote');
+  sNote.textContent = r.sleepNote ? '📝 ' + r.sleepNote : '';
+  sNote.style.display = r.sleepNote ? 'block' : 'none';
+  const wNote = document.getElementById('statsDayWakeNote');
+  wNote.textContent = r.wakeNote ? '📝 ' + r.wakeNote : '';
+  wNote.style.display = r.wakeNote ? 'block' : 'none';
+}
+function statsDayShift(delta) { statsDayKey = addDays(statsDayKey, delta); renderStatsDay(); }
+
+function renderStatsWeek() {
+  const records = getRecords(), s = getSettings();
+  const series = weekSeries(records, statsWeekKey, s.sleepGoal, s.wakeGoal);
+  const toMinCross = hm => { if (hm == null) return null; const m = hmToMin(hm); return m < 720 ? m + 1440 : m; };
+  const sleepVals = series.sleep.map(toMinCross);
+  const wakeVals = series.wake.map(hm => (hm == null ? null : hmToMin(hm)));
+  const durVals = series.duration;
+  const fmtHM = m => minToHM(Math.round(m));
+  const fmtDur = m => (m/60).toFixed(1) + 'h';
+  const range = vals => {
+    const v = vals.filter(x => x != null);
+    if (!v.length) return [0, 1440];
+    let mn = Math.min.apply(null, v), mx = Math.max.apply(null, v);
+    if (mn === mx) { mn -= 60; mx += 60; }
+    const pad = (mx - mn) * 0.15;
+    return [mn - pad, mx + pad];
+  };
+  const sr = range(sleepVals), wr = range(wakeVals), dr = range(durVals);
+  statsCharts = {
+    sleep: { labels: WEEK_LABELS, values: sleepVals, yMin: sr[0], yMax: sr[1], color: '#5B6CFF', format: fmtHM },
+    wake: { labels: WEEK_LABELS, values: wakeVals, yMin: wr[0], yMax: wr[1], color: '#FF9A3C', format: fmtHM },
+    duration: { labels: WEEK_LABELS, values: durVals, yMin: dr[0], yMax: dr[1], color: '#3FBF6F', format: fmtDur }
+  };
+  const ss = series.sleepStat, ws = series.wakeStat, ds = series.durationStat;
+  const end = addDays(statsWeekKey, 6);
+  document.getElementById('statsWeekTitle').textContent = fmtDateShort(statsWeekKey) + ' - ' + fmtDateShort(end);
+  document.getElementById('weekSleepAvg').textContent = ss.avg || '--';
+  document.getElementById('weekSleepMin').textContent = ss.min || '--';
+  document.getElementById('weekSleepMax').textContent = ss.max || '--';
+  document.getElementById('weekWakeAvg').textContent = ws.avg || '--';
+  document.getElementById('weekWakeMin').textContent = ws.min || '--';
+  document.getElementById('weekWakeMax').textContent = ws.max || '--';
+  document.getElementById('weekDurAvg').textContent = ds.avg == null ? '--' : (ds.avg/60).toFixed(1) + 'h';
+  document.getElementById('weekDurMax').textContent = ds.max == null ? '--' : (ds.max/60).toFixed(1) + 'h';
+  document.getElementById('weekDurMin').textContent = ds.min == null ? '--' : (ds.min/60).toFixed(1) + 'h';
+  if (activeTab === 'stats' && statsSubTab === 'week') drawStatsCharts();
+}
+function drawStatsCharts() {
+  if (!statsCharts) return;
+  drawLineHtml(document.getElementById('chartSleep'), statsCharts.sleep);
+  drawLineHtml(document.getElementById('chartWake'), statsCharts.wake);
+  drawLineHtml(document.getElementById('chartDuration'), statsCharts.duration);
+}
+function statsWeekShift(delta) { statsWeekKey = addDays(statsWeekKey, delta * 7); renderStatsWeek(); }
+
+function renderStatsMonth() {
+  const y = statsMonthYear, m = statsMonthMonth;
+  const ms = monthStats(getRecords(), y, m, getSettings().sleepGoal);
+  document.getElementById('statsMonthTitle').textContent = y + '年' + m + '月';
+  document.getElementById('statsMonthEarly').textContent = ms.earlySleep;
+  document.getElementById('statsMonthLate').textContent = ms.lateNight;
+  document.getElementById('statsMonthAvgSleep').textContent = ms.avgSleep || '--';
+  document.getElementById('statsMonthAvgDur').textContent = ms.avgDuration == null ? '--' : (ms.avgDuration/60).toFixed(1) + 'h';
+  document.getElementById('statsMonthCheckin').textContent = '本月已打卡 ' + ms.checkinDays + ' / ' + ms.days + ' 天';
+  document.getElementById('statsMonthGrid').innerHTML = buildCalGridHTML(y, m);
+}
+function statsMonthShift(delta) {
+  let m = statsMonthMonth + delta, y = statsMonthYear;
+  if (m < 1) { m = 12; y--; }
+  if (m > 12) { m = 1; y++; }
+  statsMonthMonth = m; statsMonthYear = y;
+  renderStatsMonth();
+}
+
+// ===== 挑战 =====
+function renderChallenge() {
+  const challenge = getChallenge();
+  const records = getRecords();
+  const settings = getSettings();
+  const nowKey = dayKey();
+  const curHM = nowHM();
+  const history = getChallengeHistory().map(h => Object.assign({}, h, { statusLabel: STATUS_LABEL[h.status] || h.status }));
+
+  let html = '';
+  if (!challenge) {
+    html = challengeIntroHTML();
+  } else {
+    const c = Object.assign({}, challenge);
+    c.determination = determinationPercent(challenge.amount);
+    if (challenge.status === 'active') {
+      const p = challengeProgress(challenge, records, settings, nowKey, curHM);
+      c.streak = p.streak; c.percent = p.percent; c.failDate = p.failDate;
+      if (p.status === 'success' || p.status === 'failed') {
+        c.status = p.status; c.statusLabel = STATUS_LABEL[p.status];
+        html = challengeResultHTML(c);
+      } else {
+        c.cancellable = p.streak === 0;
+        html = challengeActiveHTML(c);
+      }
+    } else {
+      c.statusLabel = STATUS_LABEL[challenge.status] || challenge.status;
+      c.streak = challenge.finalStreak || 0;
+      html = challengeResultHTML(c);
+    }
+  }
+  html += challengeHistoryHTML(history);
+  document.getElementById('chContent').innerHTML = html;
+}
+
+function challengeIntroHTML() {
+  return `<div class="card">
+    <div class="intro-emoji">🏆</div>
+    <div class="intro-title">早睡挑战</div>
+    <div class="intro-text">设定连续早睡天数目标，用挑战金给自己一个不熬夜的决心。</div>
+    <div class="intro-rules">
+      <div class="rule">✅ 每天入睡时间 ≤ 早睡目标 → 达标</div>
+      <div class="rule">✅ 连续达标 N 天 → 挑战成功，挑战金退回</div>
+      <div class="rule">❌ 任意一天断签 → 挑战失败，挑战金归邪恶幕后老板</div>
+      <div class="rule">📌 补卡不计入挑战；修改目标不影响已建挑战</div>
+    </div>
+    <button class="btn btn-primary" onclick="openChallengeCreate()">发起挑战</button>
+    <div class="rules-link" onclick="openRules()">查看完整规则 ›</div>
+  </div>`;
+}
+
+function challengeActiveHTML(c) {
+  return `<div class="card">
+    <div class="ch-head">
+      <span class="ch-emoji">🔥</span>
+      <div class="ch-title-wrap">
+        <div class="ch-title">连续早睡 ${c.goalDays} 天挑战</div>
+        <div class="ch-sub">开始日 ${c.startDate}</div>
+      </div>
+    </div>
+    <div class="ch-streak"><span class="ch-streak-num">${c.streak}</span><span class="ch-streak-label">已连续达标(天)</span></div>
+    <div class="ch-progress">
+      <div class="progress"><div class="progress-fill" style="width:${c.percent}%"></div></div>
+      <div class="ch-progress-text">${c.streak} / ${c.goalDays} 天</div>
+    </div>
+    <div class="ch-info">
+      <div class="ch-info-item"><span class="lbl">挑战金</span><span class="val">¥${c.amount}</span></div>
+      <div class="ch-info-item"><span class="lbl">目标入睡</span><span class="val">${c.goalSleep} 前</span></div>
+    </div>
+    <div class="ch-determination">💪 您的早睡决心超越了 ${c.determination}% 的用户</div>
+    <div class="ch-actions">
+      <button class="btn btn-ghost" onclick="openRules()">规则</button>
+      ${c.cancellable ? '<button class="btn btn-ghost cancel" onclick="cancelChallenge()">取消挑战</button>' : ''}
+    </div>
+    ${c.cancellable ? '<div class="hint">首次打卡前可免费取消，挑战金全额退回。</div>' : ''}
+  </div>`;
+}
+
+function challengeResultHTML(c) {
+  const emoji = c.status === 'success' ? '🎉' : (c.status === 'cancelled' ? '↩️' : '💔');
+  const title = c.status === 'success' ? '挑战成功！' : (c.status === 'cancelled' ? '挑战已取消' : '挑战失败');
+  let text;
+  if (c.status === 'success') text = '连续早睡 ' + c.goalDays + ' 天达成，挑战金 ¥' + c.amount + ' 全额退回！';
+  else if (c.status === 'cancelled') text = '挑战已取消，挑战金 ¥' + c.amount + ' 全额退回。';
+  else text = (c.failDate ? '在 ' + c.failDate + ' 断签，' : '') + '挑战金 ¥' + c.amount + ' 不予退还。';
+  return `<div class="card">
+    <div class="result-emoji">${emoji}</div>
+    <div class="result-title">${title}</div>
+    <div class="result-text">${text}</div>
+    <div class="result-meta"><span>连续达标 ${c.streak} 天</span><span>·</span><span>挑战金 ¥${c.amount}</span></div>
+    <button class="btn btn-primary" onclick="settleChallenge()">完成，发起新挑战</button>
+  </div>`;
+}
+
+function challengeHistoryHTML(history) {
+  if (!history.length) return '';
+  const rows = history.map(h => `<div class="h-item">
+    <div class="h-left"><div class="h-title">连续早睡 ${h.goalDays} 天 · ¥${h.amount}</div><div class="h-sub">${h.startDate}</div></div>
+    <span class="h-status ${h.status}">${h.statusLabel}</span>
+  </div>`).join('');
+  return `<div class="card"><div class="card-head"><span class="card-title">📜 历史挑战</span></div>${rows}</div>`;
+}
+
+function cancelChallenge() {
+  if (!confirm('取消后挑战金将全额退回（模拟）。确定取消吗？')) return;
+  const c = Object.assign({}, getChallenge(), { status: 'cancelled', cancelledAt: Date.now() });
+  addChallengeHistory(c);
+  saveChallenge(null);
+  render();
+}
+function settleChallenge() {
+  const challenge = getChallenge();
+  if (!challenge) return;
+  const settings = getSettings();
+  const records = getRecords();
+  const p = challengeProgress(challenge, records, settings, dayKey(), nowHM());
+  const status = p.status === 'success' ? 'success' : 'failed';
+  const c = Object.assign({}, challenge, { status, finalStreak: p.streak, failDate: p.failDate || null, settledAt: Date.now() });
+  addChallengeHistory(c);
+  saveChallenge(null);
+  render();
+}
+
+// ===== 挑战创建 =====
+let chGoalDays = 21, chAmount = 50, chStartDate = '';
+function openChallengeCreate() {
+  const today = dayKey();
+  chGoalDays = 21; chAmount = 50; chStartDate = addDays(today, 1);
+  document.getElementById('chDaysInput').value = chGoalDays;
+  document.getElementById('chAmountInput').value = chAmount;
+  const dateEl = document.getElementById('chStartDate');
+  dateEl.min = addDays(today, 1);
+  dateEl.value = chStartDate;
+  updateChallengeChips();
+  updateDetermination();
+  document.getElementById('chMask').classList.add('show');
+}
+function closeChallengeCreate() { document.getElementById('chMask').classList.remove('show'); }
+function selectDays(v) { chGoalDays = v; document.getElementById('chDaysInput').value = v; updateChallengeChips(); }
+function selectAmount(v) { chAmount = v; document.getElementById('chAmountInput').value = v; updateChallengeChips(); updateDetermination(); }
+function inputDays(v) { const n = parseInt(v, 10); chGoalDays = isNaN(n) ? '' : n; updateChallengeChips(); }
+function inputAmount(v) { const n = parseFloat(v); chAmount = isNaN(n) ? '' : n; updateChallengeChips(); updateDetermination(); }
+function updateDetermination() {
+  document.getElementById('chDetermination').textContent = '您的早睡决心超越了 ' + determinationPercent(Number(chAmount) || 0) + '% 的用户';
+}
+function updateChallengeChips() {
+  document.querySelectorAll('#chDaysChips .pick-chip').forEach(el => el.classList.toggle('active', Number(el.dataset.v) === chGoalDays));
+  document.querySelectorAll('#chAmountChips .pick-chip').forEach(el => el.classList.toggle('active', Number(el.dataset.v) === chAmount));
+}
+function payChallenge() {
+  const goalDays = Number(chGoalDays), amount = Number(chAmount), startDate = chStartDate;
+  if (!goalDays || goalDays < 7) { alert('挑战天数至少 7 天'); return; }
+  if (!amount || amount < 2) { alert('挑战金最低 2 元'); return; }
+  if (!startDate) { alert('请选择开始日期'); return; }
+  if (!confirm('确认支付挑战金 ¥' + amount + '？\n（演示环境，不产生真实扣款）')) return;
+  const settings = getSettings();
+  saveChallenge({ status: 'active', goalDays, amount, goalSleep: settings.sleepGoal, startDate, createdAt: Date.now() });
+  closeChallengeCreate();
+  switchTab('challenge');
+}
+
+// ===== 挑战规则弹层 =====
+function openRules() { document.getElementById('rulesMask').classList.add('show'); }
+function closeRules() { document.getElementById('rulesMask').classList.remove('show'); }
+
+// ===== 设置 / 我的 =====
+function loadSettingsIntoForm() {
+  const s = getSettings();
+  setTimeVal('setSleepGoal', s.sleepGoal);
+  setTimeVal('setWakeGoal', s.wakeGoal);
+  setTimeVal('setSleepStart', s.sleepWinStart);
+  setTimeVal('setSleepEnd', s.sleepWinEnd);
+  setTimeVal('setWakeStart', s.wakeWinStart);
+  setTimeVal('setWakeEnd', s.wakeWinEnd);
+}
+function renderMine() { loadSettingsIntoForm(); }
+function saveSettings() {
+  const s = {
+    sleepGoal: timeVal('setSleepGoal') || '23:30',
+    wakeGoal: timeVal('setWakeGoal') || '07:30',
+    sleepWinStart: timeVal('setSleepStart') || '19:00',
+    sleepWinEnd: timeVal('setSleepEnd') || '04:00',
+    wakeWinStart: timeVal('setWakeStart') || '04:00',
+    wakeWinEnd: timeVal('setWakeEnd') || '13:00'
+  };
+  saveSettingsToStore(s);
+  render();
+  alert('设置已保存 ✓');
+}
+function exportData() {
+  const data = { exportedAt: new Date().toISOString(), settings: getSettings(), records: getRecords(), challenge: getChallenge(), challengeHistory: getChallengeHistory() };
+  copyText(JSON.stringify(data, null, 2));
+}
+function copyText(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => alert('已复制到剪贴板 ✓'), () => fallbackCopy(text));
+  } else fallbackCopy(text);
+}
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text; document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); alert('已复制到剪贴板 ✓'); }
+  catch(e) { window.prompt('手动复制：', text); }
+  document.body.removeChild(ta);
+}
+function clearAllData() {
+  if (!confirm('将删除所有打卡记录与设置，不可恢复。建议先「导出数据」备份。确定清空吗？')) return;
+  clearAll();
+  render();
+}
+
+// ===== 打卡 =====
+function onSleep() {
+  const hm = nowHM();
+  saveRecord(sleepCheckinDate(hm), { sleepTime: hm, sleepSrc: 'realtime' });
+  render();
+}
+function onWake() {
+  const hm = nowHM();
+  saveRecord(wakeDate(), { wakeTime: hm, wakeSrc: 'realtime' });
+  render();
+}
+
+// ===== 编辑弹层 =====
+let editKey = null;
+// 入睡时间(某晚)是否已到可编辑时刻：现在 ≥ 当天 sleepWinStart（跨天后永久可编辑/补卡）
+function isSleepEditable(D, nowKey, nowHMv, winStart) {
+  return nowKey > D || (nowKey === D && nowHMv >= winStart);
+}
+// 起床时间(次日晨)是否已到可编辑时刻：现在 ≥ 次日 wakeWinStart
+function isWakeEditable(D, nowKey, nowHMv, winStart) {
+  const D1 = addDays(D, 1);
+  return nowKey > D1 || (nowKey === D1 && nowHMv >= winStart);
+}
+function openEdit(key) {
+  editKey = key;
+  const r = getRecords()[key] || {};
+  const s = getSettings();
+  const nowKey = dayKey();
+  const curHM = nowHM();
+  const sleepOk = isSleepEditable(key, nowKey, curHM, s.sleepWinStart);
+  const wakeOk = isWakeEditable(key, nowKey, curHM, s.wakeWinStart);
+  const p = key.split('-').map(Number);
+  document.getElementById('editTitle').textContent = p[1]+'月'+p[2]+'日 '+WEEK_NAMES[new Date(p[0],p[1]-1,p[2]).getDay()];
+  setTimeVal('eSleep', r.sleepTime);
+  document.getElementById('eSleepNote').value = r.sleepNote || '';
+  setTimeVal('eWake', r.wakeTime);
+  document.getElementById('eWakeNote').value = r.wakeNote || '';
+  document.getElementById('eSleep').disabled = !sleepOk;
+  document.getElementById('eSleepNote').disabled = !sleepOk;
+  document.getElementById('eWake').disabled = !wakeOk;
+  document.getElementById('eWakeNote').disabled = !wakeOk;
+  document.getElementById('delBtn').style.display = (r.sleepTime || r.wakeTime) ? 'inline-block' : 'none';
+  const hints = [];
+  if (!sleepOk) hints.push('入睡时间需到 ' + fmtDateShort(key) + ' ' + s.sleepWinStart + ' 后才能填写');
+  if (!wakeOk) hints.push('起床时间需到 ' + fmtDateShort(addDays(key, 1)) + ' ' + s.wakeWinStart + ' 后才能填写');
+  const hintEl = document.getElementById('editLockHint');
+  if (hints.length) { hintEl.style.display = 'block'; hintEl.textContent = '⏳ ' + hints.join('；'); }
+  else { hintEl.style.display = 'none'; }
+  document.getElementById('mask').classList.add('show');
+}
+function closeEdit() { document.getElementById('mask').classList.remove('show'); }
+function saveEdit() {
+  const r = getRecords()[editKey] || {};
+  const patch = {
+    sleepTime: timeVal('eSleep') || null,
+    sleepNote: document.getElementById('eSleepNote').value || null,
+    wakeTime: timeVal('eWake') || null,
+    wakeNote: document.getElementById('eWakeNote').value || null
+  };
+  if (patch.sleepTime && !(r && r.sleepTime)) patch.sleepSrc = 'backfill';
+  if (patch.wakeTime && !(r && r.wakeTime)) patch.wakeSrc = 'backfill';
+  saveRecord(editKey, patch);
+  closeEdit();
+  render();
+}
+function delRecord() {
+  const records = getRecords();
+  delete records[editKey];
+  saveRecords(records);
+  closeEdit();
+  render();
+}
+
+// ===== 时间滚筒选择器（iOS 风格）=====
+let wheelTarget = null;
+function timeVal(id) { return document.getElementById(id).getAttribute('data-value') || ''; }
+function setTimeVal(id, v) {
+  const el = document.getElementById(id);
+  el.setAttribute('data-value', v || '');
+  el.textContent = v || '--:--';
+}
+function openWheel(id) {
+  const el = document.getElementById(id);
+  if (el.disabled) return;
+  wheelTarget = id;
+  const val = el.getAttribute('data-value') || '00:00';
+  const p = val.split(':');
+  const h = Math.max(0, Math.min(23, parseInt(p[0], 10) || 0));
+  const m = Math.max(0, Math.min(59, parseInt(p[1], 10) || 0));
+  document.getElementById('wheelTitle').textContent = el.getAttribute('data-label') || '选择时间';
+  buildWheelCol('wheelHour', 24);
+  buildWheelCol('wheelMin', 60);
+  document.getElementById('wheelMask').classList.add('show');
+  requestAnimationFrame(() => {
+    document.getElementById('wheelHour').scrollTop = h * 40;
+    document.getElementById('wheelMin').scrollTop = m * 40;
+    markWheelActive('wheelHour');
+    markWheelActive('wheelMin');
+  });
+}
+function buildWheelCol(colId, count) {
+  const col = document.getElementById(colId);
+  let html = '<div style="height:80px"></div>';
+  for (let i = 0; i < count; i++) html += '<div class="wheel-item" data-i="' + i + '">' + pad2(i) + '</div>';
+  html += '<div style="height:80px"></div>';
+  col.innerHTML = html;
+  col.onscroll = () => markWheelActive(colId);
+  col.onclick = e => {
+    const item = e.target.closest('.wheel-item');
+    if (!item) return;
+    col.scrollTo({ top: Number(item.dataset.i) * 40, behavior: 'smooth' });
+  };
+}
+function markWheelActive(colId) {
+  const col = document.getElementById(colId);
+  const items = col.querySelectorAll('.wheel-item');
+  const idx = Math.max(0, Math.min(items.length - 1, Math.round(col.scrollTop / 40)));
+  items.forEach((el, i) => el.classList.toggle('active', i === idx));
+}
+function confirmWheel() {
+  if (!wheelTarget) return;
+  const h = Math.round(document.getElementById('wheelHour').scrollTop / 40);
+  const m = Math.round(document.getElementById('wheelMin').scrollTop / 40);
+  setTimeVal(wheelTarget, pad2(Math.max(0, Math.min(23, h))) + ':' + pad2(Math.max(0, Math.min(59, m))));
+  closeWheel();
+}
+function closeWheel() { document.getElementById('wheelMask').classList.remove('show'); }
+
+// ===== 启动 =====
+document.getElementById('sleepBtn').addEventListener('click', onSleep);
+document.getElementById('wakeBtn').addEventListener('click', onWake);
+render();
+</script>
+</body>
+</html>
